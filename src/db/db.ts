@@ -18,25 +18,22 @@ class Database {
         console.error("Could not connect to database", err);
       } else {
         console.info("Connected to database");
-        console.info("Creating Table: mordor_worker");
         // VERY IMPORTANT
         this.enforceForeignKey();
-        await this.createEmployeeTable();
-        console.info("Creating Table: worker_activity");
-        await this.createActivityTable();
+        this.createTables();
       }
     });
   }
   private enforceForeignKey() {
-    return this.db.run("PRAGMA foreign_keys=on");
+    return this.run("PRAGMA foreign_keys=on");
   }
   private async createEmployeeTable() {
-    return this.db.run(
+    return this.run(
       "CREATE TABLE IF NOT EXISTS mordor_worker ( id INTEGER PRIMARY KEY AUTOINCREMENT, NAME TEXT NOT NULL, EMAIL TEXT, ADDRESS TEXT  );"
     );
   }
   private async createActivityTable() {
-    return this.db.run(
+    return this.run(
       "CREATE TABLE IF NOT EXISTS worker_activity (id INTEGER PRIMARY KEY AUTOINCREMENT, employee_id integer, activity_name text, start_time text, end_time text, CONSTRAINT fk_emp_id FOREIGN KEY(employee_id) REFERENCES mordor_worker(id) );"
     );
   }
@@ -66,7 +63,16 @@ class Database {
       });
     });
   }
-
+  async createTables() {
+    console.info("Creating Table: mordor_worker");
+    await this.createEmployeeTable();
+    console.info("Creating Table: worker_activity");
+    await this.createActivityTable();
+  }
+  async dropTables() {
+    await this.run("DROP TABLE IF EXISTS worker_activity");
+    await this.run("DROP TABLE IF EXISTS mordor_worker");
+  }
   close() {
     return new Promise((resolve, reject) => {
       this.db.close((err) => {
@@ -89,7 +95,7 @@ class Database {
     );
   }
   activityGetByEmployeeId(employee_id: number) {
-    return this.all("select * from worker_activity where employee_id = ?", [
+    return this.all("select * from worker_activity where employee_id = ? ORDER BY worker_activity.start_time", [
       employee_id,
     ]);
   }
@@ -117,7 +123,7 @@ class Database {
       [end_time, employee_id]
     );
   }
-  employeeCreate(
+  async employeeCreate(
     name: Employee["name"],
     email: Employee["email"] = null,
     address: Employee["address"] = null

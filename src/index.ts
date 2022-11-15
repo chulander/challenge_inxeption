@@ -11,14 +11,14 @@ const PORT: number = !process.env.PORT
   ? 3000
   : parseInt(process.env.PORT as string, 10);
 
-const app = express();
+export const app = express();
 
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use("/api", api);
 
-const server = app.listen(PORT, () => {
+export const server = app.listen(PORT, () => {
   console.info("express running on port", PORT);
 });
 
