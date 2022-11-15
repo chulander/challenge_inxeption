@@ -7,13 +7,9 @@ import api from "./api";
 
 dotenv.config();
 
-if (!process.env.PORT) {
-  // no port throw error
-  console.error("missing PORT");
-  process.exit(1);
-}
-
-const PORT: number = parseInt(process.env.PORT as string, 10);
+const PORT: number = !process.env.PORT
+  ? 3000
+  : parseInt(process.env.PORT as string, 10);
 
 const app = express();
 
