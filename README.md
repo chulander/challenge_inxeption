@@ -39,3 +39,28 @@ npm run dev
 npm run build
 npm run prod
 ```
+
+# Endpoints
+
+### Employee
+
+Employee Interface --> src/db/types
+
+**GET**
+/api/employee/:id
+
+**POST**
+/api/employee --> { id: number }
+
+### Activity
+
+Activity Interface --> src/db/types
+
+**GET**
+/api/activity --> Activity[]
+/api/activity/:id --> Activity[]
+/api/activity/employee/:employee_id--> Activity[]
+
+**POST**
+/api/activity --> { id: number}
+
