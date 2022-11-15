@@ -32,7 +32,7 @@ class Database {
   }
   private async createWorkerActivityTable() {
     return this.db.run(
-      "CREATE TABLE IF NOT EXISTS worker_activity (id INTEGER PRIMARY KEY AUTOINCREMENT, employee_id integer, activity_name text, start_time text, end_time text, CONSTRAINT fk_emp_id FOREIGN KEY(employee_id) REFERENCES mordor_worker(id) );"
+      "CREATE TABLE IF NOT EXISTS worker_activity (id INTEGER PRIMARY KEY AUTOINCREMENT, employee_id integer, activity_name text, start_time text, end_time text, FOREIGN KEY(employee_id) REFERENCES mordor_worker(id) );"
     );
   }
   private all(sql: string, params: Params = []) {
