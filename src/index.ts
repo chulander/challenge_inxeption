@@ -9,7 +9,7 @@ dotenv.config();
 
 if (!process.env.PORT) {
   // no port throw error
-  console.log("missing PORT");
+  console.error("missing PORT");
   process.exit(1);
 }
 

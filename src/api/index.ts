@@ -1,10 +1,10 @@
 import * as express from "express";
-import worker from "./worker";
 import activity from "./activity";
+import worker from "./employee";
 
 const apiRouter = express.Router();
 
-apiRouter.use("/worker", worker);
 apiRouter.use("/activity", activity);
+apiRouter.use("/employee", worker);
 
 export default apiRouter;

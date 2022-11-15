@@ -1,18 +1,11 @@
 import * as express from "express";
 import db from "../db";
+import { EmployeePayload } from "../db/types";
 
 const router = express.Router();
-router.get("/", async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
-    const { id, name } = req.query;
-    let data;
-    if (id) {
-      data = await db.getWorkerById(Number(id as string));
-    } else if (name) {
-      data = await db.getWorkerByName(name as string);
-    } else {
-      data = await db.listWorkers();
-    }
+    const data = await db.getWorkerById(Number(req.params.id));
     res.json({
       data,
     });
@@ -22,7 +15,7 @@ router.get("/", async (req, res) => {
 });
 router.post("/", async (req, res) => {
   try {
-    const { name, email, address } = req.body;
+    const { name, email, address }: EmployeePayload = req.body;
     const data = await db.createWorker(name, email, address);
     res.status(201).json(data);
   } catch (e: any) {

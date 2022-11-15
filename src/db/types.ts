@@ -1,4 +1,4 @@
-export type Worker = {
+export type Employee = {
   id: number;
   name: string;
   email: string | null;
@@ -12,5 +12,8 @@ export type Activity = {
   start_time: string;
   end_time: string | null;
 };
+
+export type EmployeePayload = Pick<Employee, "name"> &
+  Pick<Partial<Employee>, "email" | "address">;
 
 export type Params = Array<string | number | null>;

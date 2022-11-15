@@ -1,11 +1,11 @@
 import * as dotenv from "dotenv-safe";
 import sqlite3 from "sqlite3";
-import { Worker, Activity, Params } from "./types";
+import { Employee, Activity, Params } from "./types";
 sqlite3.verbose();
 dotenv.config();
 
 if (!process.env.DB_NAME) {
-  console.log("missing DB_NAME");
+  console.error("missing DB_NAME");
   process.exit(1);
 }
 const DB: string = process.env.DB_NAME;
@@ -93,9 +93,9 @@ class Database {
     });
   }
   createWorker(
-    name: Worker["name"],
-    email: Worker["email"] = null,
-    address: Worker["address"] = null
+    name: Employee["name"],
+    email: Employee["email"] = null,
+    address: Employee["address"] = null
   ) {
     return this.run(
       "INSERT INTO mordor_worker(name, email, address) values (?, ?, ?)",
@@ -103,54 +103,64 @@ class Database {
     );
   }
   async startActivity(
-    employee_id: Activity["employee_id"],
+    name: Employee["name"],
     activity_name: Activity["activity_name"]
   ) {
     const start_time = new Date().toISOString();
-    const data = (await this.getActivityByEmployeeId(
-      employee_id
+    const [employee] = (await this.getWorkerByName(name)) as Employee[];
+    if (!employee) {
+      throw new Error(`employee ${name} does not exists`);
+    }
+
+    const openedActivities = (await this.getOpenedActivityByEmployeeName(
+      employee["name"]
     )) as Activity[];
-    if (data.length) {
-      await this.stopActivity(employee_id, start_time);
+    if (openedActivities.length) {
+      await this.stopActivity(name, start_time);
     }
 
     return this.run(
       "INSERT INTO worker_activity(employee_id, activity_name, start_time) values(?,?,?)",
-      [employee_id, activity_name, start_time]
+      [employee["id"], activity_name, start_time]
     );
   }
   stopActivity(
-    employee_id: Activity["employee_id"],
+    name: Employee["name"],
     end_time: Activity["end_time"] = new Date().toISOString()
   ) {
     return this.run(
-      "UPDATE worker_activity set end_time=? where employee_id=? AND end_time is NULL",
-      [end_time, employee_id]
+      "UPDATE worker_activity set end_time=? where employee_id IN (SELECT id from mordor_worker WHERE name=?) AND end_time IS NULL",
+      [end_time, name]
     );
   }
   getActivityById(id: Activity["id"]) {
     return this.all("SELECT * FROM worker_activity WHERE id = ?", [id]);
+  }
+  getOpenedActivityByEmployeeName(employee_name: Employee["name"]) {
+    return this.all(
+      "SELECT worker_activity.* FROM worker_activity INNER JOIN mordor_worker ON worker_activity.employee_id = mordor_worker.id AND worker_activity.end_time IS NULL WHERE mordor_worker.name=?",
+      [employee_name]
+    );
   }
   getActivityByEmployeeId(employee_id: number) {
     return this.all("select * from worker_activity where employee_id = ?", [
       employee_id,
     ]);
   }
-  getWorkerById(id: Worker["id"]) {
+  getWorkerById(id: Employee["id"]) {
     return this.all("SELECT * FROM mordor_worker WHERE id = ?", [id]);
   }
-  getWorkerByName(name: Worker["name"]) {
-    console.log("getworkercall", name);
+  getWorkerByName(name: Employee["name"]) {
     return this.all("SELECT * FROM mordor_worker WHERE name = ?", [name]);
   }
-  listWorkers(name?: Worker["name"]) {
+  listWorkers(name?: Employee["name"]) {
     return !name
       ? this.all("select * from mordor_worker")
       : this.getWorkerByName(name);
   }
   listActivities() {
     return this.all(
-      "SELECT * FROM worker_activity GROUP BY activity_name ORDER BY id"
+      "SELECT * FROM worker_activity GROUP BY activity_name ORDER BY activity_name"
     );
   }
 }

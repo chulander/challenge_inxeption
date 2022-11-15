@@ -34,19 +34,17 @@ router.get("/employee/:employee_id", async (req, res) => {
     res.status(400).json({ error: e.message });
   }
 });
-router.post("/start", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
-    const { employee_id, activity_name } = req.body;
-    const data = await db.startActivity(employee_id, activity_name);
-    res.status(201).json(data);
-  } catch (e: any) {
-    res.status(400).json({ error: e.message });
-  }
-});
-router.post("/stop", async (req, res) => {
-  try {
-    const { employee_id } = req.body;
-    const data = await db.stopActivity(employee_id);
+    let data;
+    const { name, activity_name, action } = req.body;
+    if (action === "Start") {
+      data = await db.startActivity(name, activity_name);
+    } else if (action === "Stop") {
+      data = await db.stopActivity(name);
+    } else {
+      throw new Error("action parameter not specified");
+    }
     res.status(201).json(data);
   } catch (e: any) {
     res.status(400).json({ error: e.message });
