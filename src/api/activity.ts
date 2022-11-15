@@ -12,7 +12,7 @@ router.get("/:id", async (req, res) => {
     res.status(400).json({ error: e.message });
   }
 });
-router.get("/activites", async (req, res) => {
+router.get("/list", async (req, res) => {
   try {
     const data = await db.listUniqueActivities();
     res.json({
