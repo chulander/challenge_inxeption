@@ -15,14 +15,14 @@ class Database {
   constructor(dbFilePath: string) {
     this.db = new sqlite3.Database(dbFilePath, async (err) => {
       if (err) {
-        console.log("Could not connect to database", err);
+        console.error("Could not connect to database", err);
       } else {
-        console.log("Connected to database");
-        console.log("Creating Table: mordor_worker");
+        console.info("Connected to database");
+        console.info("Creating Table: mordor_worker");
         // VERY IMPORTANT
         this.enforceForeignKey();
         await this.createWorkerTable();
-        console.log("Creating Table: worker_activity");
+        console.info("Creating Table: worker_activity");
         await this.createWorkerActivityTable();
       }
     });
@@ -44,8 +44,8 @@ class Database {
     return new Promise((resolve, reject) => {
       this.db.all(sql, params, (err, rows) => {
         if (err) {
-          console.log("Error running sql: " + sql);
-          console.log(err);
+          console.error("Error running sql: " + sql);
+          console.error(err);
           reject(err);
         } else {
           resolve(rows);
@@ -57,8 +57,8 @@ class Database {
     return new Promise((resolve, reject) => {
       this.db.run(sql, params, function (err) {
         if (err) {
-          console.log("Error running sql " + sql);
-          console.log(err);
+          console.error("Error running sql " + sql);
+          console.error(err);
           reject(err);
         } else {
           resolve({ id: this.lastID });
@@ -70,8 +70,8 @@ class Database {
     return new Promise((resolve, reject) => {
       this.db.get(sql, params, (err, result) => {
         if (err) {
-          console.log("Error running sql: " + sql);
-          console.log(err);
+          console.error("Error running sql: " + sql);
+          console.error(err);
           reject(err);
         } else {
           resolve(result);
@@ -84,7 +84,7 @@ class Database {
     return new Promise((resolve, reject) => {
       this.db.close((err) => {
         if (err) {
-          console.log(err);
+          console.error(err);
           reject(err);
         } else {
           resolve("db closed");
@@ -128,6 +128,14 @@ class Database {
       [end_time, employee_id]
     );
   }
+  getActivityById(id: Activity["id"]) {
+    return this.all("SELECT * FROM worker_activity WHERE id = ?", [id]);
+  }
+  getActivityByEmployeeId(employee_id: number) {
+    return this.all("select * from worker_activity where employee_id = ?", [
+      employee_id,
+    ]);
+  }
   getWorkerById(id: Worker["id"]) {
     return this.all("SELECT * FROM mordor_worker WHERE id = ?", [id]);
   }
@@ -140,14 +148,9 @@ class Database {
       ? this.all("select * from mordor_worker")
       : this.getWorkerByName(name);
   }
-  getActivityByEmployeeId(employee_id: number) {
-    return this.all("select * from worker_activity where employee_id = ?", [
-      employee_id,
-    ]);
-  }
-  listUniqueActivities() {
+  listActivities() {
     return this.all(
-      "SELECT activity_name name FROM worker_activity GROUP BY activity_name ORDER BY name"
+      "SELECT * FROM worker_activity GROUP BY activity_name ORDER BY id"
     );
   }
 }

@@ -2,9 +2,9 @@ import * as express from "express";
 import db from "../db";
 
 const router = express.Router();
-router.get("/:id", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const data = await db.getActivityByEmployeeId(Number(req.params.id));
+    const data = await db.listActivities();
     res.json({
       data,
     });
@@ -12,9 +12,21 @@ router.get("/:id", async (req, res) => {
     res.status(400).json({ error: e.message });
   }
 });
-router.get("/list", async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
-    const data = await db.listUniqueActivities();
+    const data = await db.getActivityById(Number(req.params.id));
+    res.json({
+      data,
+    });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+router.get("/employee/:employee_id", async (req, res) => {
+  try {
+    const data = await db.getActivityByEmployeeId(
+      Number(req.params.employee_id)
+    );
     res.json({
       data,
     });
