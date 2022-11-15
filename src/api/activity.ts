@@ -44,11 +44,13 @@ router.post("/", async (req, res) => {
       throw new Error(`employee ${name} does not exists`);
     }
     if (action === "Start") {
+      // check for existing activities without an end_time
       const openedActivitites = (await db.activityOpenedByEmployeeId(
         user["id"]
       )) as Activity[];
       const startTime = new Date().toISOString();
       if (openedActivitites.length) {
+        // ensure existing end_time = new activity.start_time
         await db.activityStop(user["id"], startTime);
       }
       data = await db.activityStart(user["id"], activity_name, startTime);
