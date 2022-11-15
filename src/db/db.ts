@@ -103,43 +103,31 @@ class Database {
     );
   }
   async startActivity(
-    name: Employee["name"],
-    activity_name: Activity["activity_name"]
+    employee_id: Activity["employee_id"],
+    activity_name: Activity["activity_name"],
+    start_time: Activity["start_time"] = new Date().toISOString()
   ) {
-    const start_time = new Date().toISOString();
-    const [employee] = (await this.getWorkerByName(name)) as Employee[];
-    if (!employee) {
-      throw new Error(`employee ${name} does not exists`);
-    }
-
-    const openedActivities = (await this.getOpenedActivityByEmployeeName(
-      employee["name"]
-    )) as Activity[];
-    if (openedActivities.length) {
-      await this.stopActivity(name, start_time);
-    }
-
     return this.run(
       "INSERT INTO worker_activity(employee_id, activity_name, start_time) values(?,?,?)",
-      [employee["id"], activity_name, start_time]
+      [employee_id, activity_name, start_time]
     );
   }
   stopActivity(
-    name: Employee["name"],
+    employee_id: Employee["id"],
     end_time: Activity["end_time"] = new Date().toISOString()
   ) {
     return this.run(
-      "UPDATE worker_activity set end_time=? where employee_id IN (SELECT id from mordor_worker WHERE name=?) AND end_time IS NULL",
-      [end_time, name]
+      "UPDATE worker_activity set end_time=? where employee_id = ? AND end_time IS NULL",
+      [end_time, employee_id]
     );
   }
   getActivityById(id: Activity["id"]) {
     return this.all("SELECT * FROM worker_activity WHERE id = ?", [id]);
   }
-  getOpenedActivityByEmployeeName(employee_name: Employee["name"]) {
+  getOpenedActivityByEmployeeId(employee_id: Employee["id"]) {
     return this.all(
-      "SELECT worker_activity.* FROM worker_activity INNER JOIN mordor_worker ON worker_activity.employee_id = mordor_worker.id AND worker_activity.end_time IS NULL WHERE mordor_worker.name=?",
-      [employee_name]
+      "SELECT worker_activity.* FROM worker_activity INNER JOIN mordor_worker ON worker_activity.employee_id = mordor_worker.id AND worker_activity.end_time IS NULL WHERE mordor_worker.id=?",
+      [employee_id]
     );
   }
   getActivityByEmployeeId(employee_id: number) {

@@ -17,3 +17,9 @@ export type EmployeePayload = Pick<Employee, "name"> &
   Pick<Partial<Employee>, "email" | "address">;
 
 export type Params = Array<string | number | null>;
+
+export type ActivityPayload = {
+  action: "Start" | "Stop";
+  name: Employee["name"];
+  activity_name: Activity["activity_name"];
+};

@@ -1,5 +1,6 @@
 import * as express from "express";
 import db from "../db";
+import { Activity, ActivityPayload, Employee } from "../db/types";
 
 const router = express.Router();
 router.get("/", async (req, res) => {
@@ -37,11 +38,22 @@ router.get("/employee/:employee_id", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     let data;
-    const { name, activity_name, action } = req.body;
+    const { name, activity_name, action } = req.body as ActivityPayload;
+    const [user] = (await db.getWorkerByName(name)) as Employee[];
+    if (!user) {
+      throw new Error(`employee ${name} does not exists`);
+    }
     if (action === "Start") {
-      data = await db.startActivity(name, activity_name);
+      const openedActivitites = (await db.getOpenedActivityByEmployeeId(
+        user["id"]
+      )) as Activity[];
+      const startTime = new Date().toISOString();
+      if (openedActivitites.length) {
+        await db.stopActivity(user["id"], startTime);
+      }
+      data = await db.startActivity(user["id"], activity_name, startTime);
     } else if (action === "Stop") {
-      data = await db.stopActivity(name);
+      data = await db.stopActivity(user["id"]);
     } else {
       throw new Error("action parameter not specified");
     }
