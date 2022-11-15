@@ -1,0 +1,96 @@
+const sqlite3 = require('sqlite3').verbose();
+let db1 = new sqlite3.Database('./db/gondor.db', sqlite3.SQLITE_OPEN_CREATE, (err) => {
+  if (err) {
+    return console.error(err.message);
+  }
+  console.log('Connected to the SQlite database.');
+});
+
+db1.close((err) => {
+  if (err) {
+    return console.error(err.message);
+  }
+  console.log('Close the database connection.');
+});
+let db = new sqlite3.Database('./db/gondor.db', sqlite3.OPEN_READWRITE, (err) => {
+  if (err) {
+    return console.error(err.message);
+  }
+  console.log('Connected to the SQlite database.');
+});
+let createTableQuery = "CREATE TABLE IF NOT EXISTS mordor_worker ( id INTEGER PRIMARY KEY, NAME TEXT NOT NULL, EMAIL TEXT, ADDRESS TEXT  );"
+db.run(createTableQuery, (err) => {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+    });
+let createTable1Query = "CREATE TABLE if not exists worker_activity (id INTEGER PRIMARY KEY, employee_id integer, activity_name text, start_time text, end_time text, CONSTRAINT fk_emp_id FOREIGN KEY(employee_id) REFERENCES mordor_worker(id) );";
+db.run(createTable1Query, (err) => {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+    });
+
+
+
+let sql = `SELECT DISTINCT activity_name name FROM worker_activity
+           ORDER BY name`;
+
+db.all(sql, [], (err, rows) => {
+  if (err) {
+    throw err;
+  }
+  rows.forEach((row) => {
+    console.log(row.name);
+  });
+});  
+    
+let dmlQueries = ["insert into mordor_worker(id, name) values(1, 'Uruk Hai');",
+"insert into mordor_worker(id, name) values (2, 'Eowyn');",
+"insert into mordor_worker(id, name) values (3, 'Urdwin');",
+"INSERT INTO worker_activity(id, employee_id, activity_name, start_time, end_time) VALUES (1, 1, 'Melting', '2021-01-24 9:05:00 -08:00', '2021-01-24 9:10:00 -08:00');",
+"INSERT INTO worker_activity(id, employee_id, activity_name, start_time, end_time) VALUES (2, 1, 'Melting', '2021-01-24 9:15:00 -08:00', '2021-01-24 10:00:00 -08:00');",
+"INSERT INTO worker_activity(id, employee_id, activity_name, start_time, end_time) VALUES (3, 2, 'Ore Smelting', '2021-01-24 9:15:00 -08:00', '2021-01-24 10:00:00 -08:00');",
+"INSERT INTO worker_activity(id, employee_id, activity_name, start_time, end_time) VALUES (4, 1, 'Ore Smelting', '2021-01-24 11:00:00 -08:00', '2021-01-24 11:45:00 -08:00');",
+"INSERT INTO worker_activity(id, employee_id, activity_name, start_time, end_time) VALUES (5, 3, 'Ore Smelting', '2021-01-24 11:30:00 -08:00', '2021-01-24 12:20:00 -08:00');",
+"INSERT INTO worker_activity(id, employee_id, activity_name, start_time, end_time) VALUES (6, 1, 'Melting', '2021-01-24 11:50:00 -08:00', '2021-01-24 12:30:00 -08:00');",
+"INSERT INTO worker_activity(id, employee_id, activity_name, start_time, end_time) VALUES (7, 2, 'Ore Smelting', '2021-01-24 10:30:00 -08:00', '2021-01-24 13:00:00 -08:00');",
+"INSERT INTO worker_activity(id, employee_id, activity_name, start_time, end_time) VALUES (8, 3, 'Melting', '2021-01-24 12:25:00 -08:00', '2021-01-24 13:00:00 -08:00');",
+"INSERT INTO worker_activity(id, employee_id, activity_name, start_time, end_time) VALUES (9, 3, 'Defenestration', '2021-01-24 13:00:00 -08:00', '2021-01-24 13:05:00 -08:00');",
+"INSERT INTO worker_activity(id, employee_id, activity_name, start_time, end_time) VALUES (10, 3, 'Melting', '2021-01-24 13:05:00 -08:00', '2021-01-24 14:00:00 -08:00');",
+"INSERT INTO worker_activity(id, employee_id, activity_name, start_time, end_time) VALUES (11, 2, 'Ore Smelting', '2021-01-24 13:30:00 -08:00', '2021-01-24 15:00:00 -08:00');",
+"INSERT INTO worker_activity(id, employee_id, activity_name, start_time, end_time) VALUES (12, 2, 'Melting', '2021-01-24 15:05:00 -08:00', '2021-01-24 17:00:00 -08:00');",
+"INSERT INTO worker_activity(id, employee_id, activity_name, start_time, end_time) VALUES (13, 1, 'Defenestration', '2021-01-24 23:55:00 -08:00',	'2021-01-25 12:35:00 -08:00');"]
+
+dmlQueries.forEach(element => db.run(element, (err) => {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+    }));
+
+
+let sql1 = `SELECT DISTINCT activity_name name FROM worker_activity
+           ORDER BY activity_name`;
+
+db.all(sql1, [], (err, rows) => {
+  if (err) {
+    throw err;
+  }
+  rows.forEach((row) => {
+    console.log(row.name);
+  });
+});
+
+
+// close the database connection
+db.close((err) => {
+  if (err) {
+    return console.error(err.message);
+  }
+  console.log('Close the database connection.');
+});
+
+
