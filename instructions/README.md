@@ -8,7 +8,7 @@ The Orcs are being told to log the time the work in the time tracker system. You
 	- Start a particular activity
 	- Stop the previous activity
 	- If an orc forgets to stop their previous activity, but start the new activity; the previous activity should be stopped with the current time as start time.
-	
+
 All activities should be stored in the worker_activity table
 
 Example JSON for logging an activity
