@@ -10,7 +10,7 @@ export type Activity = {
   employee_id: number;
   activity_name: string;
   start_time: string;
-  end_stime: string | null;
+  end_time: string | null;
 };
 
 export type Params = Array<string | number | null>;

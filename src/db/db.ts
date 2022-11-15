@@ -101,22 +101,26 @@ class Database {
     employee_id: Activity["employee_id"],
     activity_name: Activity["activity_name"]
   ) {
+    const start_time = new Date().toISOString();
     const data = (await this.getActivityByEmployeeId(
       employee_id
     )) as Array<Activity>;
     if (data.length) {
-      await this.stopActivity(employee_id);
+      await this.stopActivity(employee_id, start_time);
     }
 
     return this.run(
       "INSERT INTO worker_activity(employee_id, activity_name, start_time) values(?,?,?)",
-      [employee_id, activity_name, new Date().toISOString()]
+      [employee_id, activity_name, start_time]
     );
   }
-  stopActivity(employee_id: Activity["employee_id"]) {
+  stopActivity(
+    employee_id: Activity["employee_id"],
+    end_time: Activity["end_time"] = new Date().toISOString()
+  ) {
     return this.run(
       "UPDATE worker_activity set end_time=? where employee_id=? AND end_time is NULL",
-      [new Date().toISOString(), employee_id]
+      [end_time, employee_id]
     );
   }
   getWorkerById(id: Worker["id"]) {
