@@ -5,7 +5,7 @@ import { Activity, ActivityPayload, Employee } from "../db/types";
 const router = express.Router();
 router.get("/", async (req, res) => {
   try {
-    const data = await db.listActivities();
+    const data = await db.activityList();
     res.json({
       data,
     });
@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
 });
 router.get("/:id", async (req, res) => {
   try {
-    const data = await db.getActivityById(Number(req.params.id));
+    const data = await db.activityGetById(Number(req.params.id));
     res.json({
       data,
     });
@@ -25,7 +25,7 @@ router.get("/:id", async (req, res) => {
 });
 router.get("/employee/:employee_id", async (req, res) => {
   try {
-    const data = await db.getActivityByEmployeeId(
+    const data = await db.activityGetByEmployeeId(
       Number(req.params.employee_id)
     );
     res.json({
@@ -39,21 +39,21 @@ router.post("/", async (req, res) => {
   try {
     let data;
     const { name, activity_name, action } = req.body as ActivityPayload;
-    const [user] = (await db.getWorkerByName(name)) as Employee[];
+    const [user] = (await db.employeeGetByName(name)) as Employee[];
     if (!user) {
       throw new Error(`employee ${name} does not exists`);
     }
     if (action === "Start") {
-      const openedActivitites = (await db.getOpenedActivityByEmployeeId(
+      const openedActivitites = (await db.activityOpenedByEmployeeId(
         user["id"]
       )) as Activity[];
       const startTime = new Date().toISOString();
       if (openedActivitites.length) {
-        await db.stopActivity(user["id"], startTime);
+        await db.activityStop(user["id"], startTime);
       }
-      data = await db.startActivity(user["id"], activity_name, startTime);
+      data = await db.activityStart(user["id"], activity_name, startTime);
     } else if (action === "Stop") {
-      data = await db.stopActivity(user["id"]);
+      data = await db.activityStop(user["id"]);
     } else {
       throw new Error("action parameter not specified");
     }

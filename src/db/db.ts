@@ -21,21 +21,21 @@ class Database {
         console.info("Creating Table: mordor_worker");
         // VERY IMPORTANT
         this.enforceForeignKey();
-        await this.createWorkerTable();
+        await this.createEmployeeTable();
         console.info("Creating Table: worker_activity");
-        await this.createWorkerActivityTable();
+        await this.createActivityTable();
       }
     });
   }
   private enforceForeignKey() {
     return this.db.run("PRAGMA foreign_keys=on");
   }
-  private async createWorkerTable() {
+  private async createEmployeeTable() {
     return this.db.run(
       "CREATE TABLE IF NOT EXISTS mordor_worker ( id INTEGER PRIMARY KEY AUTOINCREMENT, NAME TEXT NOT NULL, EMAIL TEXT, ADDRESS TEXT  );"
     );
   }
-  private async createWorkerActivityTable() {
+  private async createActivityTable() {
     return this.db.run(
       "CREATE TABLE IF NOT EXISTS worker_activity (id INTEGER PRIMARY KEY AUTOINCREMENT, employee_id integer, activity_name text, start_time text, end_time text, CONSTRAINT fk_emp_id FOREIGN KEY(employee_id) REFERENCES mordor_worker(id) );"
     );
@@ -66,19 +66,6 @@ class Database {
       });
     });
   }
-  private get(sql: string, params: Params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.get(sql, params, (err, result) => {
-        if (err) {
-          console.error("Error running sql: " + sql);
-          console.error(err);
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      });
-    });
-  }
 
   close() {
     return new Promise((resolve, reject) => {
@@ -92,17 +79,26 @@ class Database {
       });
     });
   }
-  createWorker(
-    name: Employee["name"],
-    email: Employee["email"] = null,
-    address: Employee["address"] = null
-  ) {
-    return this.run(
-      "INSERT INTO mordor_worker(name, email, address) values (?, ?, ?)",
-      [name, email, address]
+  activityGetById(id: Activity["id"]) {
+    return this.all("SELECT * FROM worker_activity WHERE id = ?", [id]);
+  }
+  activityOpenedByEmployeeId(employee_id: Employee["id"]) {
+    return this.all(
+      "SELECT worker_activity.* FROM worker_activity INNER JOIN mordor_worker ON worker_activity.employee_id = mordor_worker.id AND worker_activity.end_time IS NULL WHERE mordor_worker.id=?",
+      [employee_id]
     );
   }
-  async startActivity(
+  activityGetByEmployeeId(employee_id: number) {
+    return this.all("select * from worker_activity where employee_id = ?", [
+      employee_id,
+    ]);
+  }
+  activityList() {
+    return this.all(
+      "SELECT * FROM worker_activity GROUP BY activity_name ORDER BY activity_name"
+    );
+  }
+  async activityStart(
     employee_id: Activity["employee_id"],
     activity_name: Activity["activity_name"],
     start_time: Activity["start_time"] = new Date().toISOString()
@@ -112,7 +108,7 @@ class Database {
       [employee_id, activity_name, start_time]
     );
   }
-  stopActivity(
+  activityStop(
     employee_id: Employee["id"],
     end_time: Activity["end_time"] = new Date().toISOString()
   ) {
@@ -121,35 +117,26 @@ class Database {
       [end_time, employee_id]
     );
   }
-  getActivityById(id: Activity["id"]) {
-    return this.all("SELECT * FROM worker_activity WHERE id = ?", [id]);
-  }
-  getOpenedActivityByEmployeeId(employee_id: Employee["id"]) {
-    return this.all(
-      "SELECT worker_activity.* FROM worker_activity INNER JOIN mordor_worker ON worker_activity.employee_id = mordor_worker.id AND worker_activity.end_time IS NULL WHERE mordor_worker.id=?",
-      [employee_id]
+  employeeCreate(
+    name: Employee["name"],
+    email: Employee["email"] = null,
+    address: Employee["address"] = null
+  ) {
+    return this.run(
+      "INSERT INTO mordor_worker(name, email, address) values (?, ?, ?)",
+      [name, email, address]
     );
   }
-  getActivityByEmployeeId(employee_id: number) {
-    return this.all("select * from worker_activity where employee_id = ?", [
-      employee_id,
-    ]);
-  }
-  getWorkerById(id: Employee["id"]) {
+  employeeGetById(id: Employee["id"]) {
     return this.all("SELECT * FROM mordor_worker WHERE id = ?", [id]);
   }
-  getWorkerByName(name: Employee["name"]) {
+  employeeGetByName(name: Employee["name"]) {
     return this.all("SELECT * FROM mordor_worker WHERE name = ?", [name]);
   }
-  listWorkers(name?: Employee["name"]) {
+  employeeList(name?: Employee["name"]) {
     return !name
       ? this.all("select * from mordor_worker")
-      : this.getWorkerByName(name);
-  }
-  listActivities() {
-    return this.all(
-      "SELECT * FROM worker_activity GROUP BY activity_name ORDER BY activity_name"
-    );
+      : this.employeeGetByName(name);
   }
 }
 
