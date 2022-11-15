@@ -5,7 +5,6 @@ import { EmployeePayload } from "../db/types";
 const router = express.Router();
 router.get("/:id", async (req, res) => {
   try {
-    console.log("what is req.params.id", req.params.id);
     const data = await db.employeeGetById(Number(req.params.id));
     res.json({
       data,
@@ -18,7 +17,6 @@ router.post("/", async (req, res) => {
   try {
     const { name, email, address }: EmployeePayload = req.body;
     const data = await db.employeeCreate(name, email, address);
-    console.log("data", data);
     res.status(201).json(data);
   } catch (e: any) {
     res.status(400).json({ error: e.message });

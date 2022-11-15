@@ -64,9 +64,9 @@ class Database {
     });
   }
   async createTables() {
-    console.info("Creating Table: mordor_worker");
+    // console.info("Creating Table: mordor_worker");
     await this.createEmployeeTable();
-    console.info("Creating Table: worker_activity");
+    // console.info("Creating Table: worker_activity");
     await this.createActivityTable();
   }
   async dropTables() {

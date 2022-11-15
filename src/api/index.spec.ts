@@ -12,6 +12,9 @@ describe("testing endpoints", () => {
     await db.dropTables();
     await db.createTables();
   });
+  afterAll(async () => {
+    await db.close();
+  });
   describe("employee endpoints", () => {
     it("creating a employee should return 201", async () => {
       const res = await request(app).post(`/api/employee`).send({
